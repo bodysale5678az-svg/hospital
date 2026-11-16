@@ -1,0 +1,164 @@
+@model IEnumerable<hospital.Models.Specialization>
+
+@{
+    ViewData["Title"] = "التخصصات";
+
+    // أيقونة وألوان لكل تخصص حسب اسمه (وبديل افتراضي لأي تخصص جديد)
+    (string Icon, string Color) StyleFor(string name) => name switch
+    {
+        "طب الأسنان" => ("bi-emoji-smile", "#0ea5e9"),
+        "الجلدية والتجميل" => ("bi-stars", "#ec4899"),
+        "طب الأطفال" => ("bi-balloon-heart", "#f59e0b"),
+        "الباطنة" => ("bi-heart-pulse", "#10b981"),
+        "النساء والولادة" => ("bi-person-hearts", "#8b5cf6"),
+        "الأنف والأذن والحنجرة" => ("bi-ear", "#ef4444"),
+        _ => ("bi-grid", "#0ea5e9")
+    };
+
+    var totalDoctors = Model.Sum(s => s.Doctors.Count);
+}
+
+<div class="page-hero">
+    <div class="page-hero__content">
+        <div class="page-hero__text">
+            <span class="page-hero__badge">
+                <i class="bi bi-patch-check-fill"></i> عيادات آل صالح التخصصي
+            </span>
+            <h2 class="page-hero__title">التخصصات الطبية</h2>
+            <p class="page-hero__desc">
+                خدمات طبية متكاملة تحت سقف واحد، بأحدث الأجهزة ونخبة من الاستشاريين في كل تخصص.
+            </p>
+        </div>
+        <div class="page-hero__stats">
+            <div class="page-hero__stat">
+                <strong>@Model.Count()</strong>
+                <span>تخصص طبي</span>
+            </div>
+            <div class="page-hero__stat">
+                <strong>@totalDoctors</strong>
+                <span>طبيب</span>
+            </div>
+            <div class="page-hero__stat">
+                <strong>24/7</strong>
+                <span>دعم</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] is string successMsg)
+{
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@successMsg</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+    </div>
+}
+
+@if (TempData["Error"] is string errorMsg)
+{
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@errorMsg</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+    </div>
+}
+
+<div class="spec-toolbar mb-4">
+    <div class="input-group spec-search">
+        <span class="input-group-text bg-white border-end-0">
+            <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" id="specSearch" class="form-control border-start-0 ps-0"
+               placeholder="ابحث عن تخصص..." autocomplete="off" />
+    </div>
+
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="text-muted small" id="specCount">
+            إجمالي <strong>@Model.Count()</strong> تخصص
+        </span>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> إضافة تخصص
+        </a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h5>لا توجد تخصصات مسجلة</h5>
+        <p class="text-muted mb-0">ابدأ بإضافة أول تخصص طبي للنظام.</p>
+    </div>
+}
+else
+{
+    <div class="row g-4" id="specGrid">
+        @foreach (var spec in Model)
+        {
+            var style = StyleFor(spec.Name);
+            <div class="col-sm-6 col-xl-4 spec-item" data-name="@spec.Name">
+                <div class="spec-card" style="--spec-color: @style.Color">
+                    <div class="spec-card__glow"></div>
+                    <div class="spec-card__top">
+                        <div class="spec-card__icon">
+                            <i class="bi @style.Icon"></i>
+                        </div>
+                        <span class="spec-card__count">
+                            <i class="bi bi-person-badge"></i> @spec.Doctors.Count
+                        </span>
+                    </div>
+                    <a asp-action="Details" asp-route-id="@spec.Id" class="spec-card__title d-block">@spec.Name</a>
+                    <p class="spec-card__desc">
+                        @(string.IsNullOrWhiteSpace(spec.Description) ? "تخصص طبي متكامل يغطي كافة احتياجاتك الصحية." : spec.Description)
+                    </p>
+                    <div class="spec-card__footer">
+                        <a asp-action="Details" asp-route-id="@spec.Id" class="spec-card__link">
+                            عرض الأطباء <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <div class="spec-card__actions">
+                            <a asp-action="Edit" asp-route-id="@spec.Id" class="btn-action" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@spec.Id" class="btn-action btn-action--danger" title="حذف">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="empty-state d-none" id="specEmpty">
+        <i class="bi bi-search"></i>
+        <h5>لا توجد نتائج مطابقة</h5>
+        <p class="text-muted mb-0">جرّب البحث باسم تخصص آخر.</p>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var input = document.getElementById('specSearch');
+            var items = document.querySelectorAll('.spec-item');
+            var empty = document.getElementById('specEmpty');
+            var count = document.getElementById('specCount');
+            if (!input) return;
+
+            input.addEventListener('input', function () {
+                var q = this.value.trim();
+                var shown = 0;
+
+                items.forEach(function (item) {
+                    var match = item.dataset.name.indexOf(q) !== -1;
+                    item.classList.toggle('d-none', !match);
+                    if (match) shown++;
+                });
+
+                if (empty) empty.classList.toggle('d-none', shown !== 0);
+                if (count) count.innerHTML = 'نتائج البحث: <strong>' + shown + '</strong> تخصص';
+            });
+        })();
+    </script>
+}

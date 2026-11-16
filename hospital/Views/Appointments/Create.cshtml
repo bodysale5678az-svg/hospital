@@ -1,0 +1,118 @@
+@model hospital.Models.Appointment
+
+@{
+    ViewData["Title"] = "حجز كشف جديد";
+}
+
+<div class="page-hero page-hero--compact mb-4">
+    <div class="page-hero__content">
+        <div class="page-hero__text">
+            <span class="page-hero__badge">
+                <i class="bi bi-calendar-plus-fill"></i> حجز جديد
+            </span>
+            <h2 class="page-hero__title">حجز كشف جديد</h2>
+            <p class="page-hero__desc">اختر المريض والطبيب وحدد موعد الكشف.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form asp-action="Create" novalidate>
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                    @if (ViewBag.ClinicSettings is hospital.Models.ClinicSettings settings)
+                    {
+                        <div class="alert alert-info d-flex align-items-start gap-2">
+                            <i class="bi bi-clock-history"></i>
+                            <div class="small">
+                                <strong>مواعيد العمل:</strong>
+                                @settings.OpenTime.ToString(@"hh\:mm") - @settings.CloseTime.ToString(@"hh\:mm")
+                                @if (settings.BreakStart.HasValue && settings.BreakEnd.HasValue)
+                                {
+                                    <span> | راحة: @settings.BreakStart.Value.ToString(@"hh\:mm") - @settings.BreakEnd.Value.ToString(@"hh\:mm")</span>
+                                }
+                                <br />
+                                <strong>الأيام:</strong> السبت - الخميس (الجمعة إجازة)
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="PatientId" class="form-label fw-bold">المريض</label>
+                            <select asp-for="PatientId" class="form-select" asp-items="ViewBag.PatientId">
+                                <option value="">-- اختر المريض --</option>
+                            </select>
+                            <span asp-validation-for="PatientId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DoctorId" class="form-label fw-bold">الطبيب</label>
+                            <select asp-for="DoctorId" class="form-select" asp-items="ViewBag.DoctorId">
+                                <option value="">-- اختر الطبيب --</option>
+                            </select>
+                            <span asp-validation-for="DoctorId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="AppointmentDate" class="form-label fw-bold"></label>
+                            <input asp-for="AppointmentDate" class="form-control" type="datetime-local"
+                                   min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")"
+                                   value="@(Model != null && Model.AppointmentDate != default ? Model.AppointmentDate.ToString("yyyy-MM-ddTHH:mm") : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))" />
+                            @if (ViewBag.OpenTime != null)
+                            {
+                                <div class="form-text">
+                                    من @ViewBag.OpenTime إلى @ViewBag.CloseTime
+                                    @if (ViewBag.BreakStart != null)
+                                    {
+                                        <span>| راحة: @ViewBag.BreakStart - @ViewBag.BreakEnd</span>
+                                    }
+                                </div>
+                            }
+                            <span asp-validation-for="AppointmentDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Status" class="form-label fw-bold"></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="قيد الانتظار">قيد الانتظار</option>
+                                <option value="مؤكد">مؤكد</option>
+                                <option value="مكتمل">مكتمل</option>
+                                <option value="ملغي">ملغي</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label fw-bold"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="2"
+                                  placeholder="ملاحظات الاستقبال (اختياري)"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Diagnosis" class="form-label fw-bold"></label>
+                        <textarea asp-for="Diagnosis" class="form-control" rows="3"
+                                  placeholder="التشخيص والروشتة (اختياري)"></textarea>
+                        <span asp-validation-for="Diagnosis" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check2"></i> حفظ الحجز
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

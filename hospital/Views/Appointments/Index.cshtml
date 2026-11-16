@@ -1,0 +1,90 @@
+@model IEnumerable<hospital.Models.Appointment>
+
+@{
+    ViewData["Title"] = "الحجوزات";
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h2 class="page-title mb-1">الحجوزات</h2>
+        <p class="page-subtitle mb-0">جميع مواعيد الكشف المسجلة في النظام</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> حجز كشف جديد
+    </a>
+</div>
+
+@if (TempData["Success"] is string successMsg)
+{
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@successMsg</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="empty-state border-0">
+                <i class="bi bi-calendar-x"></i>
+                <h5>لا توجد حجوزات</h5>
+                <p class="text-muted mb-0">ابدأ بحجز أول كشف للمريض.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>المريض</th>
+                            <th>الطبيب</th>
+                            <th>الموعد</th>
+                            <th>الحالة</th>
+                            <th>الملاحظات</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">@(item.Patient?.Name ?? "—")</td>
+                                <td class="text-muted">@(item.Doctor?.Name ?? "—")</td>
+                                <td class="text-muted" dir="ltr">@item.AppointmentDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @{
+                                        var badge = item.Status switch
+                                        {
+                                            "مؤكد" => "text-bg-success",
+                                            "مكتمل" => "text-bg-secondary",
+                                            "ملغي" => "text-bg-danger",
+                                            _ => "text-bg-warning"
+                                        };
+                                    }
+                                    <span class="badge @badge">@item.Status</span>
+                                </td>
+                                <td class="text-muted">@(string.IsNullOrWhiteSpace(item.Notes) ? "—" : item.Notes)</td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn-action" title="تعديل">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn-action" title="تفاصيل">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn-action btn-action--danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

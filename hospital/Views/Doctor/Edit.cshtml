@@ -1,0 +1,75 @@
+@model hospital.Models.Doctor
+
+@{
+    ViewData["Title"] = "تعديل طبيب";
+}
+
+<div class="page-hero page-hero--compact mb-4">
+    <div class="page-hero__content">
+        <div class="page-hero__text">
+            <span class="page-hero__badge">
+                <i class="bi bi-pencil-fill"></i> تعديل
+            </span>
+            <h2 class="page-hero__title">تعديل: @Model.Name</h2>
+            <p class="page-hero__desc">عدّل بيانات الطبيب واختر Specialization من القائمة.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form asp-action="Edit" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold"></label>
+                        <input asp-for="Name" class="form-control" autofocus />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Phone" class="form-label fw-bold"></label>
+                            <input asp-for="Phone" class="form-control" dir="ltr" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ConsultationFee" class="form-label fw-bold"></label>
+                            <input asp-for="ConsultationFee" class="form-control" />
+                            <span asp-validation-for="ConsultationFee" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SpecializationId" class="form-label fw-bold">Specialization</label>
+                        <select asp-for="SpecializationId" class="form-select"
+                                asp-items="ViewBag.Specializations">
+                            <option value="">-- اختر --</option>
+                        </select>
+                        <span asp-validation-for="SpecializationId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="ImageUrl" class="form-label fw-bold"></label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="images/doctor.jpg (اختياري)" dir="ltr" />
+                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check2"></i> حفظ التغييرات
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

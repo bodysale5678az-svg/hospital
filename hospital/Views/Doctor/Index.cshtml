@@ -1,0 +1,140 @@
+@model IEnumerable<hospital.Models.Doctor>
+
+@{
+    ViewData["Title"] = "الأطباء";
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h2 class="page-title mb-1">الأطباء</h2>
+        <p class="page-subtitle mb-0">جميع الأطباء العاملين في عيادات آل صالح التخصصي</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> إضافة طبيب
+    </a>
+</div>
+
+@if (TempData["Success"] is string successMsg)
+{
+    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>@successMsg</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+    </div>
+}
+
+@if (TempData["Error"] is string errorMsg)
+{
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>@errorMsg</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="إغلاق"></button>
+    </div>
+}
+
+<div class="spec-toolbar mb-4">
+    <div class="input-group spec-search">
+        <span class="input-group-text bg-white border-end-0">
+            <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" id="doctorSearch" class="form-control border-start-0 ps-0"
+               placeholder="ابحث بالاسم أو Specialization..." autocomplete="off" />
+    </div>
+    <span class="text-muted small" id="doctorCount">
+        إجمالي <strong>@Model.Count()</strong> طبيب
+    </span>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="bi bi-person-badge"></i>
+        <h5>لا يوجد أطباء مسجلين</h5>
+        <p class="text-muted mb-0">ابدأ بإضافة أول طبيب في النظام.</p>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>اسم الطبيب</th>
+                            <th>Specialization</th>
+                            <th>رقم الهاتف</th>
+                            <th>سعر الكشف</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="doctorRows">
+                        @foreach (var item in Model)
+                        {
+                            <tr data-search="@item.Name @item.Specialization?.Name">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="doctor-avatar">
+                                            @(string.IsNullOrWhiteSpace(item.Name) ? "?" : item.Name.Trim().Substring(0, 1))
+                                        </span>
+                                        <span class="fw-bold">@item.Name</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge text-bg-light">@(item.Specialization?.Name ?? "—")</span>
+                                </td>
+                                <td class="text-muted" dir="ltr">@item.Phone</td>
+                                <td class="fw-bold">@item.ConsultationFee.ToString("N0") <span class="text-muted fw-normal small">ر.س</span></td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn-action" title="تعديل">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn-action" title="تفاصيل">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn-action btn-action--danger" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty-state d-none" id="doctorEmpty">
+        <i class="bi bi-search"></i>
+        <h5>لا توجد نتائج مطابقة</h5>
+        <p class="text-muted mb-0">جرّب البحث باسم أو Specialization آخر.</p>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var input = document.getElementById('doctorSearch');
+            if (!input) return;
+            var rows = document.querySelectorAll('#doctorRows tr');
+            var empty = document.getElementById('doctorEmpty');
+            var count = document.getElementById('doctorCount');
+
+            input.addEventListener('input', function () {
+                var q = this.value.trim().toLowerCase();
+                var shown = 0;
+
+                rows.forEach(function (row) {
+                    var match = row.dataset.search.toLowerCase().indexOf(q) !== -1;
+                    row.classList.toggle('d-none', !match);
+                    if (match) shown++;
+                });
+
+                if (empty) empty.classList.toggle('d-none', shown !== 0);
+                if (count) count.innerHTML = 'نتائج البحث: <strong>' + shown + '</strong> طبيب';
+            });
+        })();
+    </script>
+}

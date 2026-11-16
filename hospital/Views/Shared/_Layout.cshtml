@@ -1,0 +1,89 @@
+﻿1   ذ<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - عيادات آل صالح التخصصي</title>
+
+    <!-- Bootstrap 5 RTL CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/hospital.styles.css" asp-append-version="true" />
+</head>
+<body>
+
+    <!-- ================= الشريط العلوي للموبايل ================= -->
+    <nav class="navbar navbar-dark bg-dark d-md-none px-3">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+            <i class="bi bi-hospital fs-5 text-info"></i>
+            <span class="fw-bold">عيادات آل صالح التخصصي</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"
+                aria-controls="sidebarMenu" aria-expanded="false" aria-label="فتح القائمة">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- ================= القائمة الجانبية الثابتة (Sidebar) ================= -->
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3">
+                <div class="text-center my-3">
+                    <i class="bi bi-hospital fs-1 text-info"></i>
+                    <h5 class="mt-2 fw-bold">عيادات آل صالح التخصصي</h5>
+                    <span class="badge bg-secondary">نظام الإدارة الطبي</span>
+                </div>
+                <hr class="text-secondary">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-speedometer2 ms-2"></i> لوحة الاستقبال
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Appointments" asp-action="Create">
+                            <i class="bi bi-calendar-plus ms-2"></i> حجز كشف جديد
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Appointments" asp-action="Index">
+                            <i class="bi bi-calendar-check ms-2"></i> الحجوزات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Doctor" asp-action="Index">
+                            <i class="bi bi-person-badge ms-2"></i> الأطباء
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-controller="Specialization"
+                           asp-action="Index">
+                            <i class="bi bi-grid ms-2"></i> التخصصات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Patient" asp-action="Index">
+                            <i class="bi bi-people ms-2"></i> سجل المرضى
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- ================= المحتوى المتغير لكل صفحة ================= -->
+            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

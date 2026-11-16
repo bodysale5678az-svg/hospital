@@ -1,0 +1,178 @@
+﻿@{
+    ViewData["Title"] = "لوحة الاستقبال";
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h2 class="page-title mb-1">لوحة الاستقبال</h2>
+        <p class="page-subtitle mb-0">نظرة عامة على نشاط عيادات آل صالح التخصصي</p>
+    </div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="text-muted small d-inline-flex align-items-center gap-1" id="autoRefreshStatus">
+            <i class="bi bi-arrow-repeat"></i>
+            <span>يتحدّث تلقائياً</span>
+        </span>
+        <span class="text-muted small">
+            <i class="bi bi-calendar3 ms-1"></i>
+            @{
+                var arDays = new[] { "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت" };
+                var arMonths = new[] { "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر" };
+                var today = DateTime.Now;
+            }
+            @($"{arDays[(int)today.DayOfWeek]}، {today.Day} {arMonths[today.Month - 1]} {today.Year}")
+        </span>
+    </div>
+</div>
+
+<div id="dashboardContent">
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-value">@ViewBag.TotalPatients</div>
+                    <div class="stat-label">إجمالي المرضى</div>
+                </div>
+                <span class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-people"></i></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-value">@ViewBag.TotalDoctors</div>
+                    <div class="stat-label">الأطباء</div>
+                </div>
+                <span class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-person-badge"></i></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-value">@ViewBag.TotalSpecializations</div>
+                    <div class="stat-label">التخصصات</div>
+                </div>
+                <span class="stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-grid"></i></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="stat-value">@ViewBag.TodayAppointments</div>
+                    <div class="stat-label">مواعيد اليوم</div>
+                </div>
+                <span class="stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-calendar-check"></i></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar-check ms-1"></i> مواعيد اليوم</span>
+                <a asp-controller="Appointments" asp-action="Create" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg"></i> حجز كشف
+                </a>
+            </div>
+            <div class="card-body p-0">
+                @{
+                    var todayList = ViewBag.TodayAppointmentsList as List<hospital.Models.Appointment>
+                                    ?? new List<hospital.Models.Appointment>();
+                }
+                @if (!todayList.Any())
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-calendar-x fs-2 d-block mb-2"></i>
+                        لا توجد مواعيد مسجلة اليوم
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>الوقت</th>
+                                    <th>المريض</th>
+                                    <th>الطبيب</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var appt in todayList)
+                                {
+                                    <tr>
+                                        <td class="fw-bold" dir="ltr">@appt.AppointmentDate.ToString("HH:mm")</td>
+                                        <td>@(appt.Patient?.Name ?? "—")</td>
+                                        <td class="text-muted">@(appt.Doctor?.Name ?? "—")</td>
+                                        <td>
+                                            @{
+                                                var badge = appt.Status switch
+                                                {
+                                                    "مؤكد" => "text-bg-success",
+                                                    "مكتمل" => "text-bg-secondary",
+                                                    "ملغي" => "text-bg-danger",
+                                                    _ => "text-bg-warning"
+                                                };
+                                            }
+                                            <span class="badge @badge">@appt.Status</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history ms-1"></i> آخر المواعيد</span>
+                <a asp-controller="Appointments" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                    الكل
+                </a>
+            </div>
+            <div class="card-body p-0">
+                @{
+                    var latest = ViewBag.LatestAppointments as List<hospital.Models.Appointment>
+                                 ?? new List<hospital.Models.Appointment>();
+                }
+                @if (!latest.Any())
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                        لا توجد مواعيد حديثة
+                    </div>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var appt in latest)
+                        {
+                            <a class="list-group-item list-group-item-action py-3"
+                               asp-controller="Appointments" asp-action="Details" asp-route-id="@appt.Id">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold">@(appt.Patient?.Name ?? "—")</span>
+                                    <span class="badge text-bg-light" dir="ltr">@appt.AppointmentDate.ToString("dd/MM HH:mm")</span>
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-person-badge"></i> @(appt.Doctor?.Name ?? "—")
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

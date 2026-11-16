@@ -1,0 +1,50 @@
+@model hospital.Models.Doctor
+
+@{
+    ViewData["Title"] = "حذف الطبيب";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-danger-subtle">
+            <div class="card-body p-4 text-center">
+                <div class="delete-icon mb-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <h4 class="fw-bold mb-2">حذف الطبيب</h4>
+                <p class="text-muted mb-4">
+                    هل أنت متأكد من حذف الطبيب «<strong>@Model.Name</strong>»؟
+                    لا يمكن التراجع عن هذا الإجراء.
+                </p>
+
+                <dl class="row text-start bg-light rounded p-3 mb-4">
+                    <dt class="col-sm-4">Specialization</dt>
+                    <dd class="col-sm-8">@(Model.Specialization?.Name ?? "—")</dd>
+                    <dt class="col-sm-4">رقم الهاتف</dt>
+                    <dd class="col-sm-8" dir="ltr">@Model.Phone</dd>
+                    <dt class="col-sm-4">سعر الكشف</dt>
+                    <dd class="col-sm-8">@Model.ConsultationFee.ToString("N0") ر.س</dd>
+                </dl>
+
+                @if (Model.Appointments.Any())
+                {
+                    <div class="alert alert-warning text-start">
+                        <i class="bi bi-info-circle"></i>
+                        هذا الطبيب لديه <strong>@Model.Appointments.Count</strong> حجز،
+                        ولذلك لا يمكن حذفه قبل حذف أو نقل الحجوزات.
+                    </div>
+                }
+
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="submit" class="btn btn-danger px-4" @(Model.Appointments.Any() ? "disabled" : "")>
+                            <i class="bi bi-trash"></i> تأكيد الحذف
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

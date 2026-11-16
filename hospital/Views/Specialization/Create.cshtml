@@ -1,0 +1,38 @@
+@model hospital.Models.Specialization
+
+@{
+    ViewData["Title"] = "إضافة تخصص جديد";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-4 text-center">
+                    <i class="bi bi-plus-circle text-primary"></i> إضافة تخصص جديد
+                </h4>
+
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-semibold">اسم التخصص</label>
+                        <input asp-for="Name" class="form-control" placeholder="مثال: باطنة، عظام، أطفال..." />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-lg"></i> حفظ التخصص
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

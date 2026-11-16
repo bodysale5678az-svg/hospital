@@ -1,0 +1,42 @@
+@model hospital.Models.Specialization
+
+@{
+    ViewData["Title"] = "حذف التخصص";
+    var hasDoctors = Model.Doctors?.Any() == true;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-danger-subtle">
+            <div class="card-body p-4 text-center">
+                <div class="delete-icon mb-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <h4 class="fw-bold mb-2">حذف التخصص</h4>
+                <p class="text-muted mb-4">
+                    هل أنت متأكد من حذف التخصص «<strong>@Model.Name</strong>»؟ لا يمكن التراجع عن هذا الإجراء.
+                </p>
+
+                @if (hasDoctors)
+                {
+                    <div class="alert alert-warning text-start">
+                        <i class="bi bi-info-circle"></i>
+                        هذا التخصص مرتبط بـ <strong>@Model.Doctors!.Count</strong> طبيب، ولذلك لا يمكن حذفه.
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="submit" class="btn btn-danger px-4" @(hasDoctors ? "disabled" : "")>
+                            <i class="bi bi-trash"></i> تأكيد الحذف
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

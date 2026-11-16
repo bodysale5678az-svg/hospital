@@ -1,0 +1,53 @@
+@model hospital.Models.Specialization
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h2 class="page-title mb-1">@Model.Name</h2>
+        <p class="page-subtitle mb-0">
+            @(string.IsNullOrWhiteSpace(Model.Description) ? "تخصص طبي متكامل." : Model.Description)
+        </p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-right"></i> رجوع للتخصصات
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-person-badge me-1"></i> أطباء هذا التخصص
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Doctors.Any())
+        {
+            <p class="text-muted mb-0 p-4">لا يوجد أطباء في هذا التخصص حالياً.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>الطبيب</th>
+                            <th>رقم الهاتف</th>
+                            <th>سعر الكشف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doctor in Model.Doctors)
+                        {
+                            <tr>
+                                <td class="fw-bold">@doctor.Name</td>
+                                <td class="text-muted" dir="ltr">@doctor.Phone</td>
+                                <td class="text-muted">@doctor.ConsultationFee.ToString("N0") ر.س</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

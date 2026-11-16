@@ -7,6 +7,22 @@ A complete **clinic management system** built with **ASP.NET Core MVC** and **En
 
 ---
 
+## 📸 Screenshots
+
+### Reception dashboard
+![Dashboard](docs/dashboard.jpeg)
+
+### Specializations
+![Specializations](docs/specializations.jpeg)
+
+### Doctors
+![Doctors](docs/doctors.jpeg)
+
+### Booking with working-hours validation
+![Booking](docs/booking.jpeg)
+
+---
+
 ## ✨ Features
 
 - 🩺 **Specializations** — full CRUD with doctor counts per specialization

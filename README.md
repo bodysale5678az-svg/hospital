@@ -2,6 +2,8 @@
 
 ![C#](https://img.shields.io/badge/C%23-239120?style=flat-square&logo=c-sharp&logoColor=white)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet&logoColor=white)
+[![.NET CI](https://github.com/bodysale5678az-svg/hospital/actions/workflows/ci.yml/badge.svg)](https://github.com/bodysale5678az-svg/hospital/actions/workflows/ci.yml)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
 A complete **clinic management system** built with **ASP.NET Core MVC** and **Entity Framework Core**, featuring a full Arabic RTL dashboard for managing specializations, doctors, patients and appointments — with **working-hours validation** and **double-booking prevention**.
 

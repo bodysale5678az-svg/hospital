@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using hospital.Data;
 
 namespace hospital.Controllers
 {
+    [Authorize]
     public class AppointmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -27,7 +29,7 @@ namespace hospital.Controllers
 
             return View(appointments);
         }
-
+        [Authorize]
         // GET: APPOINTMENTS/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -50,6 +52,8 @@ namespace hospital.Controllers
         }
 
         // GET: APPOINTMENTS/Create
+        // الحجز متاح للمدير والطبيب والمريض — التعديل والحذف للمدير فقط
+        [Authorize(Roles = RoleNames.Staff)]
         public async Task<IActionResult> Create()
         {
             await PopulateDropDownLists();
@@ -60,34 +64,84 @@ namespace hospital.Controllers
         // POST: APPOINTMENTS/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AppointmentDate,Status,Notes,Diagnosis,DoctorId,PatientId")] Appointment appointment)
+        [Authorize(Roles = RoleNames.Staff)]
+        public async Task<IActionResult> Create(
+            [Bind("AppointmentDate,Status,Notes,Diagnosis,DoctorId")] Appointment appointment,
+            string? patientName, string? patientPhone, int? patientAge, string? patientGender)
         {
             if (!await _context.Doctors.AnyAsync(d => d.Id == appointment.DoctorId))
             {
                 ModelState.AddModelError(nameof(Appointment.DoctorId), "يرجى اختيار الطبيب");
             }
 
-            if (!await _context.Patients.AnyAsync(p => p.Id == appointment.PatientId))
-            {
-                ModelState.AddModelError(nameof(Appointment.PatientId), "يرجى اختيار المريض");
-            }
+            // ===== بيانات المريض المكتوبة يدوياً =====
+            if (string.IsNullOrWhiteSpace(patientName))
+                ModelState.AddModelError(nameof(patientName), "اسم المريض مطلوب");
+
+            if (string.IsNullOrWhiteSpace(patientPhone))
+                ModelState.AddModelError(nameof(patientPhone), "رقم الهاتف مطلوب");
+            else if (!System.Text.RegularExpressions.Regex.IsMatch(patientPhone.Trim(), @"^[0-9+\-\s]{7,20}$"))
+                ModelState.AddModelError(nameof(patientPhone), "رقم الهاتف غير صحيح");
+
+            if (patientAge is null || patientAge < 1 || patientAge > 120)
+                ModelState.AddModelError(nameof(patientAge), "السن يجب أن يكون بين 1 و 120");
+
+            if (string.IsNullOrWhiteSpace(patientGender))
+                ModelState.AddModelError(nameof(patientGender), "النوع مطلوب");
 
             await ValidateSchedule(appointment, editingId: null);
 
             if (ModelState.IsValid)
             {
-                _context.Add(appointment);
+                // البحث برقم الهاتف أولاً: لو المريض مسجل بالفعل نستخدمه بدل ما نكرره
+                var phone = patientPhone!.Trim();
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Phone == phone);
+
+                if (patient == null)
+                {
+                    patient = new Patient
+                    {
+                        Name = patientName!.Trim(),
+                        Phone = phone,
+                        Age = patientAge!.Value,
+                        Gender = patientGender!.Trim()
+                    };
+                    _context.Patients.Add(patient);
+                }
+                else
+                {
+                    // حدّث البيانات لو تغيّرت
+                    patient.Name = patientName!.Trim();
+                    patient.Age = patientAge!.Value;
+                    patient.Gender = patientGender!.Trim();
+                }
+
+                appointment.Patient = patient;
+                _context.Appointments.Add(appointment);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "تم إضافة الحجز بنجاح.";
+
+                var isNew = patient.Id == 0 || _context.Entry(patient).State == EntityState.Added;
+                TempData["Success"] = isNew
+                    ? $"تم إضافة المريض \"{patient.Name}\" وحجز الكشف بنجاح."
+                    : $"تم حجز الكشف للمريض \"{patient.Name}\" بنجاح.";
+
                 return RedirectToAction(nameof(Index));
             }
 
-            await PopulateDropDownLists(appointment.DoctorId, appointment.PatientId);
+            await PopulateDropDownLists(appointment.DoctorId);
             await PopulateClinicSettings();
+
+            // نرجّع القيم المكتوبة عشان المستخدم ما يعيدش كتابتها
+            ViewBag.PatientName = patientName;
+            ViewBag.PatientPhone = patientPhone;
+            ViewBag.PatientAge = patientAge;
+            ViewBag.PatientGender = patientGender;
+
             return View(appointment);
         }
 
         // GET: APPOINTMENTS/Edit/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -109,6 +163,7 @@ namespace hospital.Controllers
         // POST: APPOINTMENTS/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Edit(int? id, [Bind("Id,AppointmentDate,Status,Notes,Diagnosis,DoctorId,PatientId")] Appointment appointment)
         {
             if (id != appointment.Id)
@@ -156,6 +211,7 @@ namespace hospital.Controllers
         }
 
         // GET: APPOINTMENTS/Delete/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -179,6 +235,7 @@ namespace hospital.Controllers
         // POST: APPOINTMENTS/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             var appointment = await _context.Appointments.FindAsync(id);

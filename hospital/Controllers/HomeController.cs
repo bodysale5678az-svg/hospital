@@ -1,11 +1,13 @@
 using hospital.Data;
 using hospital.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace hospital.Controllers
 {
+    [Authorize(Roles = RoleNames.Staff)]
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -50,11 +52,13 @@ namespace hospital.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         public IActionResult Privacy()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

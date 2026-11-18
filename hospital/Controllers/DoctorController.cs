@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using hospital.Models;
@@ -6,6 +7,7 @@ using hospital.Data;
 
 namespace hospital.Controllers
 {
+    [Authorize]
     public class DoctorController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -50,6 +52,7 @@ namespace hospital.Controllers
         }
 
         // GET: DOCTORS/Create
+        [Authorize(Roles = RoleNames.Admin)]
         public IActionResult Create()
         {
             PopulateSpecializationsDropDownList();
@@ -59,6 +62,7 @@ namespace hospital.Controllers
         // POST: DOCTORS/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Create([Bind("Id,Name,Phone,ConsultationFee,ImageUrl,SpecializationId")] Doctor doctor)
         {
             if (doctor.SpecializationId <= 0 || !await _context.Specializations.AnyAsync(s => s.Id == doctor.SpecializationId))
@@ -79,6 +83,7 @@ namespace hospital.Controllers
         }
 
         // GET: DOCTORS/Edit/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -99,6 +104,7 @@ namespace hospital.Controllers
         // POST: DOCTORS/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Edit(int? id, [Bind("Id,Name,Phone,ConsultationFee,ImageUrl,SpecializationId")] Doctor doctor)
         {
             if (id != doctor.Id)
@@ -138,6 +144,7 @@ namespace hospital.Controllers
         }
 
         // GET: DOCTORS/Delete/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -161,6 +168,7 @@ namespace hospital.Controllers
         // POST: DOCTORS/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             var doctor = await _context.Doctors

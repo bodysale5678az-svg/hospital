@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using hospital.Models;
@@ -5,6 +6,7 @@ using hospital.Data;
 
 namespace hospital.Controllers
 {
+    [Authorize]
     public class PatientController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -13,7 +15,7 @@ namespace hospital.Controllers
         {
             _context = context;
         }
-
+        [Authorize(Roles = RoleNames.Admin)]
         // GET: /Patient
         public async Task<IActionResult> Index()
         {
@@ -25,7 +27,7 @@ namespace hospital.Controllers
 
             return View(patients);
         }
-
+        [Authorize(Roles = RoleNames.Admin)]
         // GET: /Patient/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -49,6 +51,7 @@ namespace hospital.Controllers
         }
 
         // GET: /Patient/Create
+        [Authorize(Roles = RoleNames.Admin)]
         public IActionResult Create()
         {
             return View();
@@ -57,6 +60,7 @@ namespace hospital.Controllers
         // POST: /Patient/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Create([Bind("Name,Phone,Age,Gender")] Patient patient)
         {
             if (ModelState.IsValid)
@@ -71,6 +75,7 @@ namespace hospital.Controllers
         }
 
         // GET: /Patient/Edit/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -90,6 +95,7 @@ namespace hospital.Controllers
         // POST: /Patient/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Edit(int? id, [Bind("Id,Name,Phone,Age,Gender")] Patient patient)
         {
             if (id != patient.Id)
@@ -123,6 +129,7 @@ namespace hospital.Controllers
         }
 
         // GET: /Patient/Delete/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -146,6 +153,7 @@ namespace hospital.Controllers
         // POST: /Patient/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteConfirmed(int? id)
         {
             var patient = await _context.Patients.FindAsync(id);

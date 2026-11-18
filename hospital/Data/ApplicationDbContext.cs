@@ -1,10 +1,12 @@
 using hospital.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace hospital.Data
 {
     // 1. الوراثة من DbContext: لازم يورث من الكلاس ده عشان يكتسب كل قدرات الـ Entity Framework
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         // 2. الـ Constructor: بيستقبل الإعدادات (زي اسم السيرفر ونوع الداتابيز) من ملف Program.cs ويبعتها للكلاس الأب (base)
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -18,10 +20,18 @@ namespace hospital.Data
         public DbSet<Patient> Patients => Set<Patient>();
         public DbSet<Appointment> Appointments => Set<Appointment>();
         public DbSet<ClinicSettings> ClinicSettings => Set<ClinicSettings>();
+       
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // الأدوار الأساسية - HasData عشان تكون موجودة على أي قاعدة بيانات
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole { Id = "role-admin-0001", Name = RoleNames.Admin, NormalizedName = "ADMIN", ConcurrencyStamp = "role-admin-0001" },
+                new IdentityRole { Id = "role-doctor-002", Name = RoleNames.Doctor, NormalizedName = "DOCTOR", ConcurrencyStamp = "role-doctor-002" },
+                new IdentityRole { Id = "role-patient-03", Name = RoleNames.Patient, NormalizedName = "PATIENT", ConcurrencyStamp = "role-patient-03" }
+            );
 
             // فهارس
             modelBuilder.Entity<Doctor>()
@@ -32,6 +42,30 @@ namespace hospital.Data
 
             modelBuilder.Entity<Appointment>()
                 .HasIndex(a => new { a.DoctorId, a.AppointmentDate });
+
+            // ============ ربط الحساب بالطبيب / المريض ============
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(u => u.Doctor)
+                .WithMany()
+                .HasForeignKey(u => u.DoctorId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(u => u.Patient)
+                .WithMany()
+                .HasForeignKey(u => u.PatientId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // حساب واحد بس لكل طبيب / مريض
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(u => u.DoctorId)
+                .IsUnique()
+                .HasFilter("[DoctorId] IS NOT NULL");
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(u => u.PatientId)
+                .IsUnique()
+                .HasFilter("[PatientId] IS NOT NULL");
 
             // العلاقات
             modelBuilder.Entity<Doctor>()

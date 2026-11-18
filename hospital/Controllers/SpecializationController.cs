@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using hospital.Data;
@@ -5,6 +6,7 @@ using hospital.Models;
 
 namespace hospital.Controllers
 {
+    
     public class SpecializationController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -14,23 +16,24 @@ namespace hospital.Controllers
             _context = context;
         }
 
-        // GET: Specialization
+        // القراءة متاحة لأي مستخدم مسجل
         public async Task<IActionResult> Index()
         {
             var specializations = await _context.Specializations
                 .Include(s => s.Doctors)
+                .AsNoTracking()
                 .ToListAsync();
 
             return View(specializations);
         }
 
-        // GET: Specialization/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
             var specialization = await _context.Specializations
                 .Include(s => s.Doctors)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (specialization == null) return NotFound();
@@ -38,15 +41,17 @@ namespace hospital.Controllers
             return View(specialization);
         }
 
-        // GET: Specialization/Create
+        // ============ التعديل للمدير فقط ============
+
+        [Authorize(Roles = RoleNames.Admin)]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Specialization/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Create(Specialization specialization)
         {
             if (ModelState.IsValid)
@@ -58,7 +63,7 @@ namespace hospital.Controllers
             return View(specialization);
         }
 
-        // GET: Specialization/Edit/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -69,9 +74,9 @@ namespace hospital.Controllers
             return View(specialization);
         }
 
-        // POST: Specialization/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Edit(int id, Specialization specialization)
         {
             if (id != specialization.Id) return NotFound();
@@ -95,7 +100,7 @@ namespace hospital.Controllers
             return View(specialization);
         }
 
-        // GET: Specialization/Delete/5
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -109,9 +114,9 @@ namespace hospital.Controllers
             return View(specialization);
         }
 
-        // POST: Specialization/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var specialization = await _context.Specializations

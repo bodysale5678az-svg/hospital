@@ -1,4 +1,4 @@
-﻿1   ذ<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8" />
@@ -19,7 +19,7 @@
 
     <!-- ================= الشريط العلوي للموبايل ================= -->
     <nav class="navbar navbar-dark bg-dark d-md-none px-3">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Home" asp-action="Index">
             <i class="bi bi-hospital fs-5 text-info"></i>
             <span class="fw-bold">عيادات آل صالح التخصصي</span>
         </a>
@@ -39,40 +39,107 @@
                     <span class="badge bg-secondary">نظام الإدارة الطبي</span>
                 </div>
                 <hr class="text-secondary">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-speedometer2 ms-2"></i> لوحة الاستقبال
+
+                @{
+                    var isLoggedIn = User.Identity?.IsAuthenticated == true;
+                }
+
+                @if (isLoggedIn)
+                {
+                    <div class="card mb-3 border-0 shadow-sm">
+                        <div class="card-body p-2 text-center">
+                            <div class="small text-muted">مسجل الدخول</div>
+                            <div class="fw-semibold text-truncate" title="@User.Identity!.Name">@User.Identity.Name</div>
+                            <span class="badge bg-info text-dark mt-1">@RoleNames.Of(User)</span>
+                        </div>
+                    </div>
+
+                    <ul class="nav flex-column mb-3">
+                        @if (User.IsInRole(RoleNames.Admin))
+                        {
+                            <li class="nav-item mb-2">
+                                <a class="nav-link fw-semibold text-danger" asp-controller="Admin" asp-action="Index">
+                                    <i class="bi bi-shield-check ms-2"></i> لوحة المدير
+                                </a>
+                            </li>
+                        }
+                        else if (User.IsInRole(RoleNames.Doctor))
+                        {
+                            <li class="nav-item mb-2">
+                                <a class="nav-link fw-semibold text-primary" asp-controller="DoctorArea" asp-action="Index">
+                                    <i class="bi bi-person-badge ms-2"></i> لوحة الطبيب
+                                </a>
+                            </li>
+                        }
+                        else if (User.IsInRole(RoleNames.Patient))
+                        {
+                            <li class="nav-item mb-2">
+                                <a class="nav-link fw-semibold text-success" asp-controller="PatientArea" asp-action="Index">
+                                    <i class="bi bi-person-heart ms-2"></i> لوحة المريض
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="d-grid gap-2 mb-3">
+                        <a class="btn btn-sm btn-primary" asp-controller="Account" asp-action="Login">
+                            <i class="bi bi-box-arrow-in-left ms-1"></i> تسجيل الدخول
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Appointments" asp-action="Create">
-                            <i class="bi bi-calendar-plus ms-2"></i> حجز كشف جديد
+                        <a class="btn btn-sm btn-outline-secondary" asp-controller="Account" asp-action="Register">
+                            <i class="bi bi-person-plus ms-1"></i> إنشاء حساب
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Appointments" asp-action="Index">
-                            <i class="bi bi-calendar-check ms-2"></i> الحجوزات
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Doctor" asp-action="Index">
-                            <i class="bi bi-person-badge ms-2"></i> الأطباء
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           asp-controller="Specialization"
-                           asp-action="Index">
-                            <i class="bi bi-grid ms-2"></i> التخصصات
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Patient" asp-action="Index">
-                            <i class="bi bi-people ms-2"></i> سجل المرضى
-                        </a>
-                    </li>
-                </ul>
+                    </div>
+                }
+
+                @if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.Doctor) || User.IsInRole(RoleNames.Patient))
+                {
+                    <hr class="text-secondary">
+
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-speedometer2 ms-2"></i> لوحة الاستقبال
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Appointments" asp-action="Create">
+                                <i class="bi bi-calendar-plus ms-2"></i> حجز كشف جديد
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Appointments" asp-action="Index">
+                                <i class="bi bi-calendar-check ms-2"></i> الحجوزات
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Doctor" asp-action="Index">
+                                <i class="bi bi-person-badge ms-2"></i> الأطباء
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Specialization" asp-action="Index">
+                                <i class="bi bi-grid ms-2"></i> التخصصات
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Patient" asp-action="Index">
+                                <i class="bi bi-people ms-2"></i> سجل المرضى
+                            </a>
+                        </li>
+                    </ul>
+                }
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <hr class="text-secondary">
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-grid">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-box-arrow-right ms-1"></i> تسجيل الخروج
+                        </button>
+                    </form>
+                }
             </nav>
 
             <!-- ================= المحتوى المتغير لكل صفحة ================= -->

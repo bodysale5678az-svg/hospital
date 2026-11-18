@@ -1,5 +1,7 @@
-using hospital.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using hospital.Data;
+using hospital.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,32 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
+})
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// إعدادات الـ Cookie: مسارات الدخول والرفض + مدة الجلسة
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    options.SlidingExpiration = true;
+});
+
+// لوحة الاستقبال والصفحات العامة متاحة للجميع، والباقي محمي
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = null; // نعتمد على [Authorize] الصريح
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -22,8 +50,9 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseRouting();
 
+// الترتيب إلزامي: Authentication قبل Authorization
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapStaticAssets();
 
 app.MapControllerRoute(

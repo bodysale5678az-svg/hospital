@@ -13,6 +13,10 @@
                 {
                     <div class="alert alert-danger py-2" role="alert">@ViewBag.error</div>
                 }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-warning py-2" role="alert">@TempData["Error"]</div>
+                }
 
                 <form asp-controller="Account" asp-action="Register" method="post">
                     <div class="mb-3">
@@ -39,11 +43,10 @@
                     <div class="mb-4">
                         <label for="roleName" class="form-label">نوع الحساب</label>
                         <select id="roleName" name="roleName" class="form-select">
-                            <option value="Admin">مدير</option>
                             <option value="Doctor">طبيب</option>
                             <option value="Patient" selected>مريض</option>
                         </select>
-                        <div class="form-text">أول حساب في النظام بيتعمل مدير تلقائياً.</div>
+                        <div class="form-text">حسابات المدير تُنشأ من إعدادات النظام فقط.</div>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">
@@ -56,6 +59,12 @@
                 <p class="text-center mb-0 small">
                     عندك حساب بالفعل؟
                     <a asp-controller="Account" asp-action="Login">تسجيل الدخول</a>
+                </p>
+
+                <p class="text-center mt-2 mb-0 small text-muted">
+                    <a asp-controller="Account" asp-action="RegisterAdmin" class="text-danger">
+                        <i class="bi bi-shield-lock"></i> إنشاء حساب مدير
+                    </a>
                 </p>
             </div>
         </div>

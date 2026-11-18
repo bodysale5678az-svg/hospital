@@ -6,7 +6,7 @@ using hospital.Models;
 
 namespace hospital.Controllers
 {
-    
+    [Authorize(Roles = RoleNames.Staff)]
     public class SpecializationController : Controller
     {
         private readonly ApplicationDbContext _context;

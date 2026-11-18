@@ -12,8 +12,8 @@ using hospital.Data;
 namespace hospital.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261117231812_IdentityA")]
-    partial class IdentityA
+    [Migration("20261118161326_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,29 @@ namespace hospital.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "role-admin-0001",
+                            ConcurrencyStamp = "role-admin-0001",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "role-doctor-002",
+                            ConcurrencyStamp = "role-doctor-002",
+                            Name = "Doctor",
+                            NormalizedName = "DOCTOR"
+                        },
+                        new
+                        {
+                            Id = "role-patient-03",
+                            ConcurrencyStamp = "role-patient-03",
+                            Name = "Patient",
+                            NormalizedName = "PATIENT"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -121,7 +144,7 @@ namespace hospital.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable((string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -155,7 +178,7 @@ namespace hospital.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable((string)null);
                 });
 
             modelBuilder.Entity("hospital.Models.ApplicationUser", b =>
@@ -173,6 +196,9 @@ namespace hospital.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DoctorId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -202,6 +228,9 @@ namespace hospital.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("PatientId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -220,6 +249,10 @@ namespace hospital.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DoctorId")
+                        .IsUnique()
+                        .HasFilter("[DoctorId] IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -227,6 +260,10 @@ namespace hospital.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PatientId")
+                        .IsUnique()
+                        .HasFilter("[PatientId] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -402,6 +439,22 @@ namespace hospital.Migrations
                             Name = "د. ريم السبيعي",
                             Phone = "0500000006",
                             SpecializationId = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            ConsultationFee = 300m,
+                            Name = "دكتور محمود صالح",
+                            Phone = "0500000007",
+                            SpecializationId = 2
+                        },
+                        new
+                        {
+                            Id = 8,
+                            ConsultationFee = 7000m,
+                            Name = "محمد كلاي",
+                            Phone = "0500000008",
+                            SpecializationId = 7
                         });
                 });
 
@@ -495,6 +548,12 @@ namespace hospital.Migrations
                             Id = 6,
                             Description = "اضطرابات السمع والتنفس والحنجرة",
                             Name = "الأنف والأذن والحنجرة"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "طب المخ والأعصاب والأسنان",
+                            Name = "مخ و اسنان"
                         });
                 });
 
@@ -547,6 +606,23 @@ namespace hospital.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("hospital.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("hospital.Models.Doctor", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("hospital.Models.Patient", "Patient")
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
                 });
 
             modelBuilder.Entity("hospital.Models.Appointment", b =>

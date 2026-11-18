@@ -62,6 +62,11 @@
                                     <i class="bi bi-shield-check ms-2"></i> لوحة المدير
                                 </a>
                             </li>
+                            <li class="nav-item mb-2">
+                                <a class="nav-link fw-semibold text-danger" asp-controller="Admin" asp-action="Passwords">
+                                    <i class="bi bi-key-fill ms-2"></i> كلمات المرور
+                                </a>
+                            </li>
                         }
                         else if (User.IsInRole(RoleNames.Doctor))
                         {

@@ -26,6 +26,11 @@ namespace hospital.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // استبعاد جداول Identity اللي مش مستخدمة (دخول خارجي + tokens)
+            // عشان يختفوا من الـ model ويتمسحوا بالـ migration
+            modelBuilder.Entity<IdentityUserLogin<string>>().ToTable((string?)null);
+            modelBuilder.Entity<IdentityUserToken<string>>().ToTable((string?)null);
+
             // الأدوار الأساسية - HasData عشان تكون موجودة على أي قاعدة بيانات
             modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Id = "role-admin-0001", Name = RoleNames.Admin, NormalizedName = "ADMIN", ConcurrencyStamp = "role-admin-0001" },
@@ -98,7 +103,8 @@ namespace hospital.Data
                 new Specialization { Id = 3, Name = "طب الأطفال", Description = "رعاية صحة الأطفال ونموهم" },
                 new Specialization { Id = 4, Name = "الباطنة", Description = "الأمراض الباطنية والفحوصات الدورية" },
                 new Specialization { Id = 5, Name = "النساء والولادة", Description = "متابعة الحمل وصحة المرأة" },
-                new Specialization { Id = 6, Name = "الأنف والأذن والحنجرة", Description = "اضطرابات السمع والتنفس والحنجرة" }
+                new Specialization { Id = 6, Name = "الأنف والأذن والحنجرة", Description = "اضطرابات السمع والتنفس والحنجرة" },
+                new Specialization { Id = 7, Name = "مخ و اسنان", Description = "طب المخ والأعصاب والأسنان" }
             );
 
             modelBuilder.Entity<Doctor>().HasData(
@@ -107,7 +113,9 @@ namespace hospital.Data
                 new Doctor { Id = 3, Name = "د. خالد الحربي", Phone = "0500000003", ConsultationFee = 120m, SpecializationId = 3 },
                 new Doctor { Id = 4, Name = "د. نورة القحطاني", Phone = "0500000004", ConsultationFee = 180m, SpecializationId = 5 },
                 new Doctor { Id = 5, Name = "د. ماجد الزهراني", Phone = "0500000005", ConsultationFee = 160m, SpecializationId = 4 },
-                new Doctor { Id = 6, Name = "د. ريم السبيعي", Phone = "0500000006", ConsultationFee = 190m, SpecializationId = 6 }
+                new Doctor { Id = 6, Name = "د. ريم السبيعي", Phone = "0500000006", ConsultationFee = 190m, SpecializationId = 6 },
+                new Doctor { Id = 7, Name = "دكتور محمود صالح", Phone = "0500000007", ConsultationFee = 300m, SpecializationId = 2 },
+                new Doctor { Id = 8, Name = "محمد كلاي", Phone = "0500000008", ConsultationFee = 7000m, SpecializationId = 7 }
             );
             Microsoft.EntityFrameworkCore.Metadata.Builders.DataBuilder<ClinicSettings> dataBuilder = modelBuilder.Entity<ClinicSettings>().HasData(new ClinicSettings
             {

@@ -13,15 +13,17 @@ public class AccountController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _config;
 
     public AccountController(UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager,
-        ApplicationDbContext context)
+        ApplicationDbContext context, IConfiguration config)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
         _context = context;
+        _config = config;
     }
 
     // يوجّه المستخدم للصفحة المناسبة حسب دوره
@@ -42,12 +44,92 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
+    // مساعد: هل ده إيميل مكوّن كأدمن؟
+    private bool IsConfiguredAdminEmail(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+
+        var adminEmails = _config.GetSection("AdminSettings:AdminEmails").Get<string[]>()
+                          ?? Array.Empty<string>();
+
+        return adminEmails.Any(a =>
+            !string.IsNullOrWhiteSpace(a) &&
+            string.Equals(a.Trim(), email.Trim(), StringComparison.OrdinalIgnoreCase));
+    }
+
     public IActionResult Register()
     {
         if (User.Identity?.IsAuthenticated == true)
             return RedirectToAction("Index", "Home");
 
         return View();
+    }
+
+    // GET: ACCOUNT/RegisterAdmin — صفحة تسجيل مخصصة للمدراء
+    // متاحة بس لو الإيميل مكتوب في AdminSettings:AdminEmails
+    public IActionResult RegisterAdmin()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+            return RedirectToAction("Index", "Home");
+
+        var adminEmails = _config.GetSection("AdminSettings:AdminEmails").Get<string[]>()
+                          ?? Array.Empty<string>();
+
+        // لو مفيش أي إيميل متكوّن، مفيش فايدة من الصفحة
+        if (!adminEmails.Any(e => !string.IsNullOrWhiteSpace(e)))
+        {
+            TempData["Error"] = "مفيش أي إيميل مدير متكوّن في النظام.";
+            return RedirectToAction(nameof(Register));
+        }
+
+        return View();
+    }
+
+    // POST: ACCOUNT/RegisterAdmin
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RegisterAdmin(string fullName, string address, string email, string password)
+    {
+        if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            ViewBag.error = "كل الحقول مطلوبة.";
+            return View();
+        }
+
+        // 🔒 التحقق الحاسم: الإيميل لازم يكون في القائمة
+        if (!IsConfiguredAdminEmail(email))
+        {
+            ViewBag.error = "هذا البريد غير مصرّح له بإنشاء حساب مدير.";
+            return View();
+        }
+
+        if (await _userManager.FindByEmailAsync(email.Trim()) != null)
+        {
+            ViewBag.error = "هذا البريد مستخدم بالفعل.";
+            return View();
+        }
+
+        var newAdmin = new ApplicationUser
+        {
+            FullName = fullName.Trim(),
+            Address = address,
+            Email = email.Trim(),
+            UserName = email.Trim()
+        };
+
+        var result = await _userManager.CreateAsync(newAdmin, password);
+
+        if (!result.Succeeded)
+        {
+            ViewBag.error = string.Join(" | ", result.Errors.Select(e => e.Description));
+            return View();
+        }
+
+        await _userManager.AddToRoleAsync(newAdmin, RoleNames.Admin);
+        await _signInManager.SignInAsync(newAdmin, isPersistent: false);
+
+        TempData["Success"] = "تم إنشاء حساب المدير بنجاح.";
+        return RedirectToAction("Index", "Admin");
     }
 
     [HttpPost]
@@ -74,15 +156,20 @@ public class AccountController : Controller
 
         if (result.Succeeded)
         {
-            // أول مستخدم في النظام بيبقى مدير تلقائياً
-            var assignedRole = isFirstUser
-                ? RoleNames.Admin
-                : roleName switch
-                {
-                    RoleNames.Admin => RoleNames.Admin,
-                    RoleNames.Doctor => RoleNames.Doctor,
-                    _ => RoleNames.Patient
-                };
+            var isConfiguredAdmin = IsConfiguredAdminEmail(email);
+            var canBeAdmin = isFirstUser || isConfiguredAdmin;
+
+            // لو اختار "مدير" وهو مش مسموح → نمسح الحساب ونرفض بوضوح
+            if (roleName == RoleNames.Admin && !canBeAdmin)
+            {
+                await _userManager.DeleteAsync(newUser);
+                ViewBag.error = "غير مصرّح لك بإنشاء حساب مدير. استخدم صفحة التسجيل العادية.";
+                return View();
+            }
+
+            var assignedRole = canBeAdmin && roleName == RoleNames.Admin ? RoleNames.Admin
+                             : roleName == RoleNames.Doctor ? RoleNames.Doctor
+                             : RoleNames.Patient;
 
             await _userManager.AddToRoleAsync(newUser, assignedRole);
 

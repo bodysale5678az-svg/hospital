@@ -7,7 +7,7 @@ using hospital.Models;
 
 namespace hospital.Controllers;
 
-[AllowAnonymous]
+[Authorize(Roles = RoleNames.Patient)]
 public class PatientAreaController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -24,8 +24,9 @@ public class PatientAreaController : Controller
         var me = await _userManager.GetUserAsync(User);
         ViewBag.Me = me;
 
-        // لو الحساب دور Patient ومش مربوط بملف مريض — نعمله ملف تلقائياً
-        if (me != null && me.PatientId == null)
+        // لو الحساب دور Patient ومش مربوط بملف مريض — نعمله ملف تلقائياً.
+        // شرط الدور إلزامي: من غيره أي مستخدم (أو زائر) يدخل الصفحة يعمله ملف مريض وهمي.
+        if (me != null && me.PatientId == null && User.IsInRole(RoleNames.Patient))
         {
             var newPatient = new Patient
             {

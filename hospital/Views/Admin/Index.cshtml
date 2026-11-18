@@ -7,6 +7,12 @@
 
 <h2 class="h4 mb-4"><i class="bi bi-shield-check text-danger ms-1"></i> لوحة تحكم المدير</h2>
 
+<div class="mb-3">
+    <a asp-action="Passwords" class="btn btn-outline-primary">
+        <i class="bi bi-key-fill"></i> إدارة كلمات المرور
+    </a>
+</div>
+
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success py-2">@TempData["Success"]</div>

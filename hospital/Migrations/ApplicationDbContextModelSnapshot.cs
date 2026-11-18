@@ -141,7 +141,7 @@ namespace hospital.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", (string)null);
+                    b.ToTable((string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -175,7 +175,7 @@ namespace hospital.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", (string)null);
+                    b.ToTable((string)null);
                 });
 
             modelBuilder.Entity("hospital.Models.ApplicationUser", b =>
@@ -436,6 +436,22 @@ namespace hospital.Migrations
                             Name = "د. ريم السبيعي",
                             Phone = "0500000006",
                             SpecializationId = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            ConsultationFee = 300m,
+                            Name = "دكتور محمود صالح",
+                            Phone = "0500000007",
+                            SpecializationId = 2
+                        },
+                        new
+                        {
+                            Id = 8,
+                            ConsultationFee = 7000m,
+                            Name = "محمد كلاي",
+                            Phone = "0500000008",
+                            SpecializationId = 7
                         });
                 });
 
@@ -529,6 +545,12 @@ namespace hospital.Migrations
                             Id = 6,
                             Description = "اضطرابات السمع والتنفس والحنجرة",
                             Name = "الأنف والأذن والحنجرة"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "طب المخ والأعصاب والأسنان",
+                            Name = "مخ و اسنان"
                         });
                 });
 
